@@ -1,23 +1,32 @@
+class Armario{
+    List<Prenda> prendas = new ArrayList<Prenda>();
+    Borrador ultimoborrador;
+
+    void CargarPrenda(Prenda prenda){
+        prendas.add(prenda);
+    }
+
+    void crearBorrador(){
+        this.ultimoBorrador = new Borrador(this);
+    }
+
+}
 class Prenda{
     Categoria categoria;
-    String material;
-    String tipo;
-    Interger colorPrimario;
-    Interger colorSecundario;
+    MateriaPrima material;
+    Tipo tipo;
+    Color colorPrimario;
+    Color colorSecundario;
 
-    Prenda(Categoria categoriaP,String tipoP, String materialP, Interger color1, Interger color2){
-        if(this.validarDatos(categoriaP,tipoP,materialP,color1)){
+    Prenda(Tipo tipoP, MateriaPrima materialP, Color color1, Color color2){
+        if(this.validarDatos(tipoP,materialP,color1)){
             this.material = materialP;
             this.colorPrimario = color1;
-            if(categoriaP.validarTipo(tipoP)){
-                this.categoria = categoriaP;
-                this.tipo = tipoP;
-            }else{
-                throw new Exception("El tipo de prenda y la categoria ingresada no coinciden para esta prenda");
-            }
-
+            this.tipo = tipoP;
+            this.categoria = tipoP.getCategoria();
+           
         }else{
-            throw new Exception("Los parametros de la prenda no pueden ser nulos");
+            throw new RuntimeException("Los parametros de la prenda no pueden ser nulos");
         }
         
         if(color2 != null){
@@ -30,18 +39,87 @@ class Prenda{
     }
 }
 
-class Armario{
-    List<Prenda> prendas = new ArrayList<Prenda>();
+class Borrador{
+    Tipo tipo;
+    Material material;
+    Armario armario;
 
-    void CargarPrenda(Prenda prenda){
-        prendas.add(prenda);
+    Borrador(Armario armario){
+        this.armario = armario;
+    }
+
+    void agragarTipo(Tipo tipo){
+        this.tipo = tipo;
+    }
+
+    void agregarMaterial(MateriaPrima materia, Color color1, Color color2, Trama trama){
+        this.material = new Material(materia, color1, color2, trama);
+        //verificar que el material concuerde con el tipo no se me ocurrio bien como hacerlo organizado
+    }
+
+    void guardarBorradorFinalizado(){
+        armario.agregarPrenda(new Prenda(tipo, material.materiaPrima, material.colorPrimario, material.colorSecundario));
     }
 }
 
-class Categoria{
-    Bool validarTipo(String tipo){
-        //no se me ocurrio que hacer aca podria ser un map con las combinaciones pero me parecio 
-        //muy rebuscado y poco implementable
-        return true;
+class Material{
+    Trama trama = Trama.LISA;
+    MateriaPrima materiaPrima;
+    Color colorPrimario;
+    Color colorSecundario;
+
+    Material(MateriaPrima materia,Color color1, Color color2, Trama trama){
+        this.material = materia;
+        this.colorPrimario = color1;
+        if(trama != null){
+            this.trama = trama;
+        }
+        if(color2 != null){
+            this.colorSecundario = color2;
+        }  
     }
 }
+
+enum MateriaPrima{
+    TELA, METAL, PLASTICO, LONA, CUERO;
+}
+enum Trama{
+    LISA, RAYADA, LUNARES, CUADROS, ESTAMPADO;
+}
+class Color{
+    Int red, green, blue;
+  }
+
+public enum Tipo {
+    //public abstract Categoria getCategoria();
+
+    REMERA {
+        @Override
+        public Categoria getCategoria() { return Categoria.PARTE_SUPERIOR; }
+
+        public boolean materialValido(MateriaPrima material){
+            return material == MateriaPrima.CUERO;
+        }
+    }, 
+    PANTALON {
+        @Override
+        public Categoria getCategoria() { return Categoria.PARTE_INFERIOR; }
+    },
+    ZAPATO {
+        @Override
+        public Categoria getCategoria() { return Categoria.CALZADO; }
+    },
+    ABRIGO {
+        @Override
+        public Categoria getCategoria() { return Categoria.PARTE_SUPERIOR; }
+    },
+    COLLAR{
+        @Override
+        public Categoria getCategoria() { return Categoria.ACCESORIOS; }
+    };
+}
+
+public enum Categoria {
+    PARTE_SUPERIOR, PARTE_INFERIOR, CAZADO, ACCESORIOS;
+}
+
